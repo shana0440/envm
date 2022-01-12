@@ -1,3 +1,7 @@
+use envm;
+
 fn main() {
-    println!("Hello, world!");
+    if let Err(err) = envm::run() {
+        eprintln!("{}", err);
+    }
 }
