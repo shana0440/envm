@@ -37,6 +37,7 @@ pub struct Environment<'a> {
     config: &'a Config,
     repo_path: &'a Path,
     head_path: PathBuf,
+    backup_path: PathBuf,
     head: Head,
 }
 
@@ -45,10 +46,12 @@ impl<'a> Environment<'a> {
         let head_path = repo.envm_path().join("HEAD");
         let contents = fs::read_to_string(&head_path).map_err(|_| EnvmError::MissngHeadFile)?;
         let head = Head::from(&contents);
+        let backup_path = repo.envm_path().join(".env.backup");
         Ok(Environment {
             config: repo.config(),
             repo_path: repo.path(),
             head_path,
+            backup_path,
             head,
         })
     }
@@ -74,7 +77,9 @@ impl<'a> Environment<'a> {
     pub fn use_environment(&self, env: &str) -> Result<(), EnvmError> {
         let target_env = self.get_environment_filename(env);
         let local_env = self.get_local_environment_filename();
-        // TODO: backup env file if is local environment.
+        if matches!(self.head, Head::Local) {
+            fs::copy(&local_env, &self.backup_path).map_err(|_| EnvmError::FailedToBackupLocalEnvironment)?;
+        }
         if Path::new(&target_env).exists() {
             fs::copy(target_env, local_env).unwrap();
         } else {

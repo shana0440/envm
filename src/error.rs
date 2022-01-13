@@ -7,6 +7,7 @@ pub enum EnvmError {
     FailedToParseConfig,
     MissngHeadFile,
     MissingTargetEnvironment(String),
+    FailedToBackupLocalEnvironment,
 }
 
 impl fmt::Display for EnvmError {
@@ -17,6 +18,7 @@ impl fmt::Display for EnvmError {
             EnvmError::FailedToParseConfig => write!(f, "failed to parse the configuration"),
             EnvmError::MissngHeadFile => write!(f, "cannot found the head at .envm"),
             EnvmError::MissingTargetEnvironment(env) => write!(f, "cannot found the {} environment", env),
+            EnvmError::FailedToBackupLocalEnvironment => write!(f, "failed to backup the local environment"),
         }
     }
 }
