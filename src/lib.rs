@@ -1,13 +1,11 @@
 mod repository;
-mod config;
 mod error;
 mod command;
-mod env;
 
 use crate::repository::Repository;
+use crate::repository::environment::Environment;
 use crate::error::EnvmError;
 use crate::command::{Command, UseCase};
-use crate::env::Environment;
 
 pub fn run() -> Result<(), EnvmError> {
     let command = Command::new();

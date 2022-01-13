@@ -1,6 +1,9 @@
 use std::{env, fs, path::{Path, PathBuf}};
 
-use crate::config::Config;
+pub mod config;
+pub mod environment;
+
+use crate::repository::config::Config;
 use crate::error::EnvmError;
 
 pub struct Repository {

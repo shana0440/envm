@@ -2,7 +2,7 @@ use std::{fs, fmt, path::{PathBuf, Path}};
 
 use crate::error::EnvmError;
 use crate::repository::Repository;
-use crate::config::Config;
+use crate::repository::config::Config;
 
 // To identify the current environment is local or other, since in most case we won't have another
 // file for local environment, so we need to backup the environment file if we are using local
