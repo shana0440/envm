@@ -4,28 +4,35 @@ use crate::config::Config;
 use crate::error::EnvmError;
 
 pub struct Repository {
-    worktree: PathBuf,
+    path: PathBuf,
+    envm_path: PathBuf,
     config: Config,
 }
 
 impl Repository {
     pub fn new() -> Result<Repository, EnvmError> {
-        let worktree = match lookup_repository(env::current_dir().unwrap()) {
-            Some(path) => path.join(".envm"),
+        let path = match lookup_repository(env::current_dir().unwrap()) {
+            Some(path) => path,
             None => return Err(EnvmError::NotEnvmRepository),
         };
-        let config_path = worktree.join("config");
+        let envm_path = path.join(".envm");
+        let config_path = envm_path.join("config");
         let contents = fs::read_to_string(config_path)
             .map_err(|_| EnvmError::MissingConfigFile)?;
         let config = Config::from(&contents)?;
         Ok(Repository {
-            worktree,
+            path,
+            envm_path,
             config,
         })
     }
 
-    pub fn worktree(&self) -> &Path {
-        self.worktree.as_path()
+    pub fn envm_path(&self) -> &Path {
+        self.envm_path.as_path()
+    }
+
+    pub fn path(&self) -> &Path {
+        self.path.as_path()
     }
 
     pub fn config(&self) -> &Config {

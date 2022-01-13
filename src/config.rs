@@ -15,6 +15,14 @@ impl Config {
             .map_err(|_| EnvmError::FailedToParseConfig)?;
         Ok(config)
     }
+
+    pub fn local(&self) -> &String {
+        &self.local
+    }
+
+    pub fn pattern(&self) -> &String {
+        &self.pattern
+    }
 }
 
 #[cfg(test)]

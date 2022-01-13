@@ -5,6 +5,8 @@ pub enum EnvmError {
     NotEnvmRepository,
     MissingConfigFile,
     FailedToParseConfig,
+    MissngHeadFile,
+    MissingTargetEnvironment(String),
 }
 
 impl fmt::Display for EnvmError {
@@ -13,6 +15,8 @@ impl fmt::Display for EnvmError {
             EnvmError::NotEnvmRepository => write!(f, "not a envm repository (or any of the parent directories)"),
             EnvmError::MissingConfigFile => write!(f, "cannot found the configuration at .envm"),
             EnvmError::FailedToParseConfig => write!(f, "failed to parse the configuration"),
+            EnvmError::MissngHeadFile => write!(f, "cannot found the head at .envm"),
+            EnvmError::MissingTargetEnvironment(env) => write!(f, "cannot found the {} environment", env),
         }
     }
 }
