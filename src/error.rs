@@ -8,6 +8,7 @@ pub enum EnvmError {
     MissngHeadFile,
     MissingTargetEnvironment(String),
     FailedToBackupLocalEnvironment,
+    MissingBackupEnvironment,
 }
 
 impl fmt::Display for EnvmError {
@@ -19,6 +20,7 @@ impl fmt::Display for EnvmError {
             EnvmError::MissngHeadFile => write!(f, "cannot found the head at .envm"),
             EnvmError::MissingTargetEnvironment(env) => write!(f, "cannot found the {} environment", env),
             EnvmError::FailedToBackupLocalEnvironment => write!(f, "failed to backup the local environment"),
+            EnvmError::MissingBackupEnvironment => write!(f, "cannot found the backup local environment"),
         }
     }
 }
