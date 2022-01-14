@@ -1,5 +1,3 @@
-use std::string::ToString;
-
 // To identify the current environment is local or other, since in most case we won't have another
 // file for local environment, so we need to backup the environment file if we are using local
 // environment configuration, then we can switch back to local environment later.
@@ -18,13 +16,11 @@ impl EnvType {
             EnvType::Other(String::from(contents))
         }
     }
-}
 
-impl ToString for EnvType {
-    fn to_string(&self) -> String {
+    pub fn to_string(&self) -> &str {
         match &self {
-            EnvType::Local => String::from("local"),
-            EnvType::Other(value) => value.clone(),
+            EnvType::Local => "local",
+            EnvType::Other(value) => &value,
         }
     }
 }
