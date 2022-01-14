@@ -2,6 +2,7 @@ use clap::{arg, crate_authors, crate_description, crate_version, App, AppSetting
 
 pub enum UseCase {
     Use(String),
+    NewEnvironment(String),
     InitConfiguration,
 }
 
@@ -21,7 +22,12 @@ impl<'a> Command<'a> {
                     .about("Use environment")
                     .arg(arg!(<ENV> "The environment to target")),
             )
-            .subcommand(App::new("init").about("Create envm repository"));
+            .subcommand(App::new("init").about("Create envm repository"))
+            .subcommand(
+                App::new("new")
+                    .about("Create new environment base on template")
+                    .arg(arg!(<ENV> "The environment to target")),
+            );
 
         Command { app }
     }
@@ -35,6 +41,10 @@ impl<'a> Command<'a> {
             }
             Some(("init", _)) => {
                 return UseCase::InitConfiguration;
+            }
+            Some(("new", sub_matches)) => {
+                let env = sub_matches.value_of("ENV").expect("required");
+                return UseCase::NewEnvironment(String::from(env));
             }
             _ => unreachable!(),
         };

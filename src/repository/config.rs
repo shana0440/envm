@@ -7,6 +7,7 @@ use crate::error::EnvmError;
 pub struct Config {
     local: String,
     pattern: String,
+    template: String,
 }
 
 impl Config {
@@ -14,6 +15,7 @@ impl Config {
         Config {
             local: String::from(".env"),
             pattern: String::from(".env.{}"),
+            template: String::from(".env.example"),
         }
     }
 
@@ -31,6 +33,10 @@ impl Config {
         &self.pattern
     }
 
+    pub fn template(&self) -> &String {
+        &self.template
+    }
+
     pub fn to_string(&self) -> String {
         toml::to_string(self).unwrap()
     }
@@ -46,10 +52,12 @@ mod tests {
             r#"
             local = ".env"
             pattern = ".env.{}"
+            example = ".env.example"
         "#,
         )?;
         assert_eq!(config.local, ".env");
         assert_eq!(config.pattern, ".env.{}");
+        assert_eq!(config.template, ".env.example");
         Ok(())
     }
 }

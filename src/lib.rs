@@ -22,6 +22,10 @@ pub fn run() -> Result<(), EnvmError> {
                     repo.use_environment(&target)?;
                     println!("switch to {} environment", target);
                 }
+                UseCase::NewEnvironment(env) => {
+                    repo.new_environment(&env)?;
+                    println!("create a new environment '{}'", env);
+                }
                 _ => (),
             }
         }

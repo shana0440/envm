@@ -10,6 +10,8 @@ pub enum EnvmError {
     FailedToBackupLocalEnvironment,
     MissingBackupEnvironment,
     RepositoryAlreadyExists,
+    MissingTemplateEnvironment(String),
+    TargetEnvironmentAlreadyExists(String),
 }
 
 impl fmt::Display for EnvmError {
@@ -32,6 +34,8 @@ impl fmt::Display for EnvmError {
                 write!(f, "cannot found the backup local environment")
             }
             EnvmError::RepositoryAlreadyExists => write!(f, "the envm repository already exists"),
+            EnvmError::MissingTemplateEnvironment(filename) => write!(f, "cannot found the template environment: {}", filename),
+            EnvmError::TargetEnvironmentAlreadyExists(env) => write!(f, "the '{}' environment already exists", env),
         }
     }
 }

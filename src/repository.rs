@@ -108,6 +108,24 @@ impl Repository {
         .unwrap();
         Ok(envm_path)
     }
+
+    pub fn new_environment(&self, env: &str) -> Result<(), EnvmError> {
+        let template_path = self.path.join(self.config.template());
+        let target_path = match EnvType::from(env) {
+            EnvType::Local => self.get_local_environment_filename(),
+            EnvType::Other(_) => path::get_env_path(&self.path, self.config.pattern(), env),
+        };
+        if !template_path.exists() {
+            return Err(EnvmError::MissingTemplateEnvironment(
+                self.config.template().clone(),
+            ));
+        }
+        if target_path.exists() {
+            return Err(EnvmError::TargetEnvironmentAlreadyExists(String::from(env)));
+        }
+        fs::copy(template_path, target_path).unwrap();
+        Ok(())
+    }
 }
 
 fn lookup_repository(dir: PathBuf) -> Option<PathBuf> {
