@@ -1,4 +1,4 @@
-use std::fmt;
+use std::string::ToString;
 
 // To identify the current environment is local or other, since in most case we won't have another
 // file for local environment, so we need to backup the environment file if we are using local
@@ -20,11 +20,11 @@ impl EnvType {
     }
 }
 
-impl fmt::Display for EnvType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl ToString for EnvType {
+    fn to_string(&self) -> String {
         match &self {
-            EnvType::Local => write!(f, "local"),
-            EnvType::Other(value) => write!(f, "{}", value),
+            EnvType::Local => String::from("local"),
+            EnvType::Other(value) => value.clone(),
         }
     }
 }

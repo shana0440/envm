@@ -9,6 +9,7 @@ pub enum EnvmError {
     MissingTargetEnvironment(String),
     FailedToBackupLocalEnvironment,
     MissingBackupEnvironment,
+    RepositoryAlreadyExists,
 }
 
 impl fmt::Display for EnvmError {
@@ -30,6 +31,7 @@ impl fmt::Display for EnvmError {
             EnvmError::MissingBackupEnvironment => {
                 write!(f, "cannot found the backup local environment")
             }
+            EnvmError::RepositoryAlreadyExists => write!(f, "the envm repository already exists"),
         }
     }
 }

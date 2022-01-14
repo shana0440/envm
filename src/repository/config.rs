@@ -1,15 +1,22 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use toml;
 
 use crate::error::EnvmError;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
     local: String,
     pattern: String,
 }
 
 impl Config {
+    pub fn new() -> Config {
+        Config {
+            local: String::from(".env"),
+            pattern: String::from(".env.{}"),
+        }
+    }
+
     pub fn from(contents: &str) -> Result<Config, EnvmError> {
         let config: Config =
             toml::from_str(contents).map_err(|_| EnvmError::FailedToParseConfig)?;
@@ -22,6 +29,10 @@ impl Config {
 
     pub fn pattern(&self) -> &String {
         &self.pattern
+    }
+
+    pub fn to_string(&self) -> String {
+        toml::to_string(self).unwrap()
     }
 }
 

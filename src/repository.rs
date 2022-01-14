@@ -18,7 +18,16 @@ pub struct Repository {
 }
 
 impl Repository {
-    pub fn new() -> Result<Repository, EnvmError> {
+    pub fn new() -> Repository {
+        let path = env::current_dir().unwrap();
+        Repository {
+            path,
+            config: Config::new(),
+            current_env: EnvType::Local,
+        }
+    }
+
+    pub fn load() -> Result<Repository, EnvmError> {
         let path = match lookup_repository(env::current_dir().unwrap()) {
             Some(path) => path,
             None => return Err(EnvmError::NotEnvmRepository),
@@ -29,7 +38,11 @@ impl Repository {
         let head_path = path::get_head_path(&path);
         let contents = fs::read_to_string(head_path).map_err(|_| EnvmError::MissngHeadFile)?;
         let current_env = EnvType::from(&contents);
-        Ok(Repository { path, config, current_env })
+        Ok(Repository {
+            path,
+            config,
+            current_env,
+        })
     }
 
     fn get_environment_filename(&self, env: &str) -> PathBuf {
@@ -45,9 +58,8 @@ impl Repository {
 
     fn set_head(&self, env: &str) {
         let env = EnvType::from(env);
-        let data = format!("{}", env);
         let head_path = path::get_head_path(&self.path);
-        fs::write(head_path, data).unwrap();
+        fs::write(head_path, env.to_string()).unwrap();
     }
 
     pub fn use_environment(&self, env: &str) -> Result<(), EnvmError> {
@@ -80,6 +92,21 @@ impl Repository {
         }
         self.set_head(env);
         Ok(())
+    }
+
+    pub fn init(&self) -> Result<PathBuf, EnvmError> {
+        let envm_path = path::get_envm_path(&self.path);
+        if envm_path.exists() {
+            return Err(EnvmError::RepositoryAlreadyExists);
+        }
+        fs::create_dir(path::get_envm_path(&self.path)).unwrap();
+        fs::write(path::get_config_path(&self.path), self.config.to_string()).unwrap();
+        fs::write(
+            path::get_head_path(&self.path),
+            self.current_env.to_string(),
+        )
+        .unwrap();
+        Ok(envm_path)
     }
 }
 

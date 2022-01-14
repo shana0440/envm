@@ -27,6 +27,10 @@ pub fn get_local_backup_path<P: AsRef<Path>>(path: P) -> PathBuf {
     path.as_ref().join(".envm").join(".env.backup")
 }
 
+pub fn get_envm_path<P: AsRef<Path>>(path: P) -> PathBuf {
+    path.as_ref().join(".envm")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -70,5 +74,11 @@ mod tests {
             get_local_backup_path(path),
             Path::new("/repo/.envm/.env.backup")
         );
+    }
+
+    #[test]
+    fn should_get_envm_path() {
+        let path = Path::new("/repo");
+        assert_eq!(get_envm_path(path), Path::new("/repo/.envm"));
     }
 }
