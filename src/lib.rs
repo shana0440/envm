@@ -18,7 +18,7 @@ pub fn run() -> Result<(), EnvmError> {
         other => {
             let repo = Repository::load()?;
             match other {
-                UseCase::Use(target) => {
+                UseCase::UseEnvironment(target) => {
                     repo.use_environment(&target)?;
                     println!("switch to {} environment", target);
                 }

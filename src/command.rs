@@ -1,7 +1,7 @@
 use clap::{arg, crate_authors, crate_description, crate_version, App, AppSettings};
 
 pub enum UseCase {
-    Use(String),
+    UseEnvironment(String),
     NewEnvironment(String),
     InitConfiguration,
 }
@@ -37,7 +37,7 @@ impl<'a> Command<'a> {
         match matches.subcommand() {
             Some(("use", sub_matches)) => {
                 let env = sub_matches.value_of("ENV").expect("required");
-                return UseCase::Use(String::from(env));
+                return UseCase::UseEnvironment(String::from(env));
             }
             Some(("init", _)) => {
                 return UseCase::InitConfiguration;
