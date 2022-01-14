@@ -133,7 +133,7 @@ impl Repository {
 
 fn lookup_repository(dir: PathBuf) -> Option<PathBuf> {
     dir.ancestors()
-        .take_while(|it| it.join(".envm").exists())
+        .take_while(|it| path::get_envm_path(it).exists())
         .next()
         .map(|it| it.to_path_buf())
 }

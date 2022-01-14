@@ -1,11 +1,11 @@
 use std::path::{Component, Path, PathBuf};
 
 pub fn get_config_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    path.as_ref().join(".envm").join("config")
+    get_envm_path(path).join("config")
 }
 
 pub fn get_head_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    path.as_ref().join(".envm").join("HEAD")
+    get_envm_path(path).join("HEAD")
 }
 
 // Ensure the env is a single text instead of path, so user can't access other file than
@@ -24,7 +24,7 @@ pub fn get_env_path<P: AsRef<Path>>(path: P, pattern: &str, env: &str) -> PathBu
 }
 
 pub fn get_local_backup_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    path.as_ref().join(".envm").join(".env.backup")
+    get_envm_path(path).join(".env.backup")
 }
 
 pub fn get_envm_path<P: AsRef<Path>>(path: P) -> PathBuf {
