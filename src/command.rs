@@ -1,11 +1,10 @@
-use clap::{arg, App, AppSettings, crate_version, crate_authors, crate_description};
+use clap::{arg, crate_authors, crate_description, crate_version, App, AppSettings};
 
 pub enum UseCase {
     Use(String),
 }
 
-pub struct Command<'a>
-{
+pub struct Command<'a> {
     app: App<'a>,
 }
 
@@ -19,7 +18,7 @@ impl<'a> Command<'a> {
             .subcommand(
                 App::new("use")
                     .about("Use environment")
-                    .arg(arg!(<ENV> "The environment to target"))
+                    .arg(arg!(<ENV> "The environment to target")),
             );
 
         Command { app }
@@ -31,7 +30,7 @@ impl<'a> Command<'a> {
             Some(("use", sub_matches)) => {
                 let env = sub_matches.value_of("ENV").expect("required");
                 return UseCase::Use(String::from(env));
-            },
+            }
             _ => unreachable!(),
         };
     }

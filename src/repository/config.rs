@@ -11,8 +11,8 @@ pub struct Config {
 
 impl Config {
     pub fn from(contents: &str) -> Result<Config, EnvmError> {
-        let config: Config = toml::from_str(contents)
-            .map_err(|_| EnvmError::FailedToParseConfig)?;
+        let config: Config =
+            toml::from_str(contents).map_err(|_| EnvmError::FailedToParseConfig)?;
         Ok(config)
     }
 
@@ -31,10 +31,12 @@ mod tests {
 
     #[test]
     fn prase_config() -> Result<(), EnvmError> {
-        let config = Config::from(r#"
+        let config = Config::from(
+            r#"
             local = ".env"
             pattern = ".env.{}"
-        "#)?;
+        "#,
+        )?;
         assert_eq!(config.local, ".env");
         assert_eq!(config.pattern, ".env.{}");
         Ok(())

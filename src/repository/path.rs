@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf, Component};
+use std::path::{Component, Path, PathBuf};
 
 pub fn get_config_path<P: AsRef<Path>>(path: P) -> PathBuf {
     path.as_ref().join(".envm").join("config")
@@ -48,7 +48,10 @@ mod tests {
         let path = Path::new("/repo");
         let pattern = ".env.{}";
         let env = "dev";
-        assert_eq!(get_env_path(path, pattern, env), Path::new("/repo/.env.dev"));
+        assert_eq!(
+            get_env_path(path, pattern, env),
+            Path::new("/repo/.env.dev")
+        );
     }
 
     #[test]
@@ -63,6 +66,9 @@ mod tests {
     #[test]
     fn should_get_local_backup_path() {
         let path = Path::new("/repo");
-        assert_eq!(get_local_backup_path(path), Path::new("/repo/.envm/.env.backup"));
+        assert_eq!(
+            get_local_backup_path(path),
+            Path::new("/repo/.envm/.env.backup")
+        );
     }
 }

@@ -1,9 +1,12 @@
-use std::{fs, fmt, path::{PathBuf, Path}};
+use std::{
+    fmt, fs,
+    path::{Path, PathBuf},
+};
 
 use crate::error::EnvmError;
-use crate::repository::Repository;
 use crate::repository::config::Config;
 use crate::repository::path;
+use crate::repository::Repository;
 
 // To identify the current environment is local or other, since in most case we won't have another
 // file for local environment, so we need to backup the environment file if we are using local
@@ -74,7 +77,8 @@ impl<'a> Environment<'a> {
         let local_env = self.get_local_environment_filename();
         let backup_path = path::get_local_backup_path(self.repo_path);
         if matches!(self.current_env, EnvType::Local) {
-            fs::copy(&local_env, &backup_path).map_err(|_| EnvmError::FailedToBackupLocalEnvironment)?;
+            fs::copy(&local_env, &backup_path)
+                .map_err(|_| EnvmError::FailedToBackupLocalEnvironment)?;
         }
 
         let copy = |target, err| {
@@ -91,7 +95,10 @@ impl<'a> Environment<'a> {
             }
             EnvType::Other(_) => {
                 let target_env = self.get_environment_filename(env);
-                copy(&target_env, EnvmError::MissingTargetEnvironment(String::from(env)))?;
+                copy(
+                    &target_env,
+                    EnvmError::MissingTargetEnvironment(String::from(env)),
+                )?;
             }
         }
         self.set_head(env);
@@ -117,10 +124,12 @@ mod tests {
 
     #[test]
     fn get_environment_filename() -> Result<(), EnvmError> {
-        let config = Config::from(r#"
+        let config = Config::from(
+            r#"
             local = ".env"
             pattern = ".env.{}"
-        "#)?;
+        "#,
+        )?;
         let env = Environment {
             config: &config,
             repo_path: Path::new("/repo"),
