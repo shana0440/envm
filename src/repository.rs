@@ -2,13 +2,13 @@ use std::{env, fs, path::{Path, PathBuf}};
 
 pub mod config;
 pub mod environment;
+pub mod path;
 
 use crate::repository::config::Config;
 use crate::error::EnvmError;
 
 pub struct Repository {
     path: PathBuf,
-    envm_path: PathBuf,
     config: Config,
 }
 
@@ -18,20 +18,14 @@ impl Repository {
             Some(path) => path,
             None => return Err(EnvmError::NotEnvmRepository),
         };
-        let envm_path = path.join(".envm");
-        let config_path = envm_path.join("config");
+        let config_path = path::get_config_path(&path);
         let contents = fs::read_to_string(config_path)
             .map_err(|_| EnvmError::MissingConfigFile)?;
         let config = Config::from(&contents)?;
         Ok(Repository {
             path,
-            envm_path,
             config,
         })
-    }
-
-    pub fn envm_path(&self) -> &Path {
-        self.envm_path.as_path()
     }
 
     pub fn path(&self) -> &Path {
