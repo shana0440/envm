@@ -52,7 +52,7 @@ mod tests {
             r#"
             local = ".env"
             pattern = ".env.{}"
-            example = ".env.example"
+            template = ".env.example"
         "#,
         )?;
         assert_eq!(config.local, ".env");
