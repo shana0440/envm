@@ -63,6 +63,9 @@ impl Repository {
     }
 
     pub fn use_environment(&self, env: &str) -> Result<(), EnvmError> {
+        if env == self.current_env.to_string() {
+            return Err(EnvmError::AlreadyUsingTargetEnvironment(String::from(env)));
+        }
         let local_env = self.get_local_environment_filename();
         let backup_path = path::get_local_backup_path(&self.path);
         if matches!(self.current_env, EnvType::Local) {
