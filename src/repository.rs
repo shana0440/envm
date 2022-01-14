@@ -132,14 +132,10 @@ impl Repository {
 }
 
 fn lookup_repository(dir: PathBuf) -> Option<PathBuf> {
-    let mut path = dir.as_path();
-    while !path.join(".envm").exists() {
-        match path.parent() {
-            Some(p) => path = p,
-            None => return None,
-        }
-    }
-    return Some(path.to_path_buf());
+    dir.ancestors()
+        .take_while(|it| it.join(".envm").exists())
+        .next()
+        .map(|it| it.to_path_buf())
 }
 
 #[cfg(test)]
