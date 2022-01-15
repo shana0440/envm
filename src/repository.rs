@@ -1,5 +1,5 @@
 use std::{
-    env, fs,
+    fs,
     path::{Path, PathBuf},
 };
 
@@ -18,8 +18,7 @@ pub struct Repository {
 }
 
 impl Repository {
-    pub fn new() -> Repository {
-        let path = env::current_dir().unwrap();
+    pub fn new(path: PathBuf) -> Repository {
         Repository {
             path,
             config: Config::new(),
@@ -27,8 +26,8 @@ impl Repository {
         }
     }
 
-    pub fn load() -> Result<Repository, EnvmError> {
-        let path = match lookup_repository(env::current_dir().unwrap()) {
+    pub fn load(path: PathBuf) -> Result<Repository, EnvmError> {
+        let path = match lookup_repository(path) {
             Some(path) => path,
             None => return Err(EnvmError::NotEnvmRepository),
         };
