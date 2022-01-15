@@ -50,6 +50,7 @@ impl Repository {
     }
 
     // Use to get the main environment file path
+    // FIXME: remove this after refactor path module
     fn get_local_environment_filename(&self) -> PathBuf {
         let local_env_name = self.config.local();
         self.path.join(local_env_name)
@@ -230,6 +231,39 @@ mod tests {
         repo.use_environment("local")?;
         let contents = fs::read_to_string(local_path)?;
         assert_eq!(contents, "ENV=backup");
+        fs::remove_dir_all(repo.path)?;
+        Ok(())
+    }
+
+    fn make_template_env_file(repo: &Repository) -> Result<PathBuf, Box<dyn Error>> {
+        // FIXME: use path module after refactor path
+        let template_path = repo.path.join(repo.config.template());
+        fs::write(&template_path, "ENV=")?;
+        Ok(template_path)
+    }
+
+    #[test]
+    fn should_new_target_env_file() -> Result<(), Box<dyn Error>> {
+        let repo = create_envm_repo_use_local_env()?;
+        make_template_env_file(&repo)?;
+
+        repo.new_environment("dev")?;
+
+        let dev_path = path::get_env_path(&repo.path, repo.config.pattern(), "dev");
+        assert!(dev_path.exists());
+        fs::remove_dir_all(repo.path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn should_new_local_env_file_by_config() -> Result<(), Box<dyn Error>> {
+        let repo = create_envm_repo_use_local_env()?;
+        make_template_env_file(&repo)?;
+
+        repo.new_environment("local")?;
+
+        let local_path = repo.get_local_environment_filename();
+        assert!(local_path.exists());
         fs::remove_dir_all(repo.path)?;
         Ok(())
     }
