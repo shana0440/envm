@@ -140,10 +140,25 @@ fn lookup_repository(dir: PathBuf) -> Option<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::error::Error;
+    use tempfile;
 
     #[test]
     fn not_a_repository() {
         let root = Path::new("/not/a/repository").to_path_buf();
         assert_eq!(lookup_repository(root), None);
+    }
+
+    #[test]
+    fn should_init_repo() -> Result<(), Box<dyn Error>> {
+        let dir = tempfile::tempdir()?;
+        let dir = dir.into_path();
+        let repo = Repository::new(dir.clone());
+        repo.init()?;
+        assert!(path::get_envm_path(&dir).exists());
+        assert!(path::get_config_path(&dir).exists());
+        assert!(path::get_head_path(&dir).exists());
+        fs::remove_dir_all(&dir)?;
+        Ok(())
     }
 }
