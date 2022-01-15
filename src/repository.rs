@@ -161,4 +161,76 @@ mod tests {
         fs::remove_dir_all(&dir)?;
         Ok(())
     }
+
+    fn create_envm_repo_use_local_env() -> Result<Repository, Box<dyn Error>> {
+        let dir = tempfile::tempdir()?;
+        let dir = dir.into_path();
+        let repo = Repository::new(dir.clone());
+        repo.init()?;
+        Ok(repo)
+    }
+
+    fn make_local_env_file(repo: &Repository) -> Result<PathBuf, Box<dyn Error>> {
+        let path = repo.get_local_environment_filename();
+        fs::write(&path, "ENV=local")?;
+        Ok(path)
+    }
+
+    fn make_env_file(repo: &Repository, env: &str) -> Result<PathBuf, Box<dyn Error>> {
+        let path = path::get_env_path(&repo.path, repo.config.pattern(), env);
+        let data = format!("ENV={}", env);
+        fs::write(&path, data)?;
+        Ok(path)
+    }
+
+    #[test]
+    fn should_use_target_env() -> Result<(), Box<dyn Error>> {
+        let repo = create_envm_repo_use_local_env()?;
+        let local_path = make_local_env_file(&repo)?;
+        make_env_file(&repo, "dev")?;
+
+        repo.use_environment("dev")?;
+
+        let head_path = path::get_head_path(&repo.path);
+        let head = fs::read_to_string(head_path)?;
+        assert_eq!(head, EnvType::Other(String::from("dev")).to_string());
+
+        let contents = fs::read_to_string(local_path)?;
+        assert_eq!(contents, "ENV=dev");
+        fs::remove_dir_all(repo.path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn should_backup_local_env() -> Result<(), Box<dyn Error>> {
+        let repo = create_envm_repo_use_local_env()?;
+        make_local_env_file(&repo)?;
+        make_env_file(&repo, "dev")?;
+
+        repo.use_environment("dev")?;
+        let backup_path = path::get_local_backup_path(&repo.path);
+        assert!(backup_path.exists());
+        let contents = fs::read_to_string(backup_path)?;
+        assert_eq!(contents, "ENV=local");
+        fs::remove_dir_all(repo.path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn should_use_backup_local_env_use_local_env() -> Result<(), Box<dyn Error>> {
+        let repo = create_envm_repo_use_local_env()?;
+        let local_path = make_local_env_file(&repo)?;
+        make_env_file(&repo, "dev")?;
+        repo.use_environment("dev")?;
+        let backup_path = path::get_local_backup_path(&repo.path);
+        fs::write(&backup_path, "ENV=backup")?;
+
+        // Sync repository state with file system
+        let repo = Repository::load(repo.path)?;
+        repo.use_environment("local")?;
+        let contents = fs::read_to_string(local_path)?;
+        assert_eq!(contents, "ENV=backup");
+        fs::remove_dir_all(repo.path)?;
+        Ok(())
+    }
 }
