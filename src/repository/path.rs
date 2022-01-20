@@ -28,6 +28,14 @@ pub fn get_local_backup_path(repo: &Repository) -> PathBuf {
     get_envm_path(&repo.path).join(".env.backup")
 }
 
+pub fn get_local_env_path(repo: &Repository) -> PathBuf {
+    repo.path.join(repo.config.local())
+}
+
+pub fn get_template_env_path(repo: &Repository) -> PathBuf {
+    repo.path.join(repo.config.template())
+}
+
 pub fn get_envm_path<P: AsRef<Path>>(path: P) -> PathBuf {
     path.as_ref().join(".envm")
 }
@@ -99,5 +107,20 @@ mod tests {
         assert!(!is_envm_repository(&dir));
         fs::remove_dir_all(dir)?;
         Ok(())
+    }
+
+    #[test]
+    fn should_get_local_env_path() {
+        let repo = Repository::new(Path::new("/repo").to_path_buf());
+        assert_eq!(get_local_env_path(&repo), Path::new("/repo/.env"));
+    }
+
+    #[test]
+    fn should_get_template_env_path() {
+        let repo = Repository::new(Path::new("/repo").to_path_buf());
+        assert_eq!(
+            get_template_env_path(&repo),
+            Path::new("/repo/.env.example")
+        );
     }
 }
