@@ -1,3 +1,4 @@
+use crate::repository::Repository;
 use std::path::{Component, Path, PathBuf};
 
 pub fn get_config_path<P: AsRef<Path>>(path: P) -> PathBuf {
@@ -15,70 +16,88 @@ fn is_valid_env(env: &str) -> bool {
     paths.len() == 1
 }
 
-pub fn get_env_path<P: AsRef<Path>>(path: P, pattern: &str, env: &str) -> PathBuf {
+pub fn get_env_path(repo: &Repository, env: &str) -> PathBuf {
     if !is_valid_env(env) {
         panic!("The target environment is invalid: {}", env);
     }
-    let filename = pattern.replace("{}", env);
-    path.as_ref().join(filename)
+    let filename = repo.config.pattern().replace("{}", env);
+    repo.path.join(filename)
 }
 
-pub fn get_local_backup_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    get_envm_path(path).join(".env.backup")
+pub fn get_local_backup_path(repo: &Repository) -> PathBuf {
+    get_envm_path(&repo.path).join(".env.backup")
 }
 
 pub fn get_envm_path<P: AsRef<Path>>(path: P) -> PathBuf {
     path.as_ref().join(".envm")
 }
 
+pub fn is_envm_repository<P: AsRef<Path>>(path: P) -> bool {
+    get_envm_path(path).exists()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::{error::Error, fs};
+    use tempfile;
 
     #[test]
     fn should_get_config_path() {
-        let path = Path::new("/repo");
-        assert_eq!(get_config_path(path), Path::new("/repo/.envm/config"));
+        let repo = Repository::new(Path::new("/repo").to_path_buf());
+        assert_eq!(get_config_path(&repo.path), Path::new("/repo/.envm/config"));
     }
 
     #[test]
     fn should_get_head_path() {
-        let path = Path::new("/repo");
-        assert_eq!(get_head_path(path), Path::new("/repo/.envm/HEAD"));
+        let repo = Repository::new(Path::new("/repo").to_path_buf());
+        assert_eq!(get_head_path(&repo.path), Path::new("/repo/.envm/HEAD"));
     }
 
     #[test]
     fn should_get_env_path() {
-        let path = Path::new("/repo");
-        let pattern = ".env.{}";
+        let repo = Repository::new(Path::new("/repo").to_path_buf());
         let env = "dev";
-        assert_eq!(
-            get_env_path(path, pattern, env),
-            Path::new("/repo/.env.dev")
-        );
+        assert_eq!(get_env_path(&repo, env), Path::new("/repo/.env.dev"));
     }
 
     #[test]
     #[should_panic]
     fn should_not_get_env_path_out_of_repo() {
-        let path = Path::new("/repo");
-        let pattern = ".env.{}";
+        let repo = Repository::new(Path::new("/repo").to_path_buf());
         let env = "dev/../../target.txt";
-        get_env_path(path, pattern, env);
+        get_env_path(&repo, env);
     }
 
     #[test]
     fn should_get_local_backup_path() {
-        let path = Path::new("/repo");
+        let repo = Repository::new(Path::new("/repo").to_path_buf());
         assert_eq!(
-            get_local_backup_path(path),
+            get_local_backup_path(&repo),
             Path::new("/repo/.envm/.env.backup")
         );
     }
 
     #[test]
     fn should_get_envm_path() {
-        let path = Path::new("/repo");
-        assert_eq!(get_envm_path(path), Path::new("/repo/.envm"));
+        let repo = Repository::new(Path::new("/repo").to_path_buf());
+        assert_eq!(get_envm_path(&repo.path), Path::new("/repo/.envm"));
+    }
+
+    #[test]
+    fn should_be_envm_repository() -> Result<(), Box<dyn Error>> {
+        let dir = tempfile::tempdir().unwrap();
+        fs::create_dir(dir.path().join(".envm"))?;
+        assert!(is_envm_repository(&dir));
+        fs::remove_dir_all(dir)?;
+        Ok(())
+    }
+
+    #[test]
+    fn should_not_be_envm_repository() -> Result<(), Box<dyn Error>> {
+        let dir = tempfile::tempdir().unwrap();
+        assert!(!is_envm_repository(&dir));
+        fs::remove_dir_all(dir)?;
+        Ok(())
     }
 }

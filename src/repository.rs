@@ -44,11 +44,6 @@ impl Repository {
         })
     }
 
-    fn get_environment_filename(&self, env: &str) -> PathBuf {
-        let pattern = self.config.pattern();
-        path::get_env_path(&self.path, pattern, env)
-    }
-
     // Use to get the main environment file path
     // FIXME: remove this after refactor path module
     fn get_local_environment_filename(&self) -> PathBuf {
@@ -67,7 +62,7 @@ impl Repository {
             return Err(EnvmError::AlreadyUsingTargetEnvironment(String::from(env)));
         }
         let local_env = self.get_local_environment_filename();
-        let backup_path = path::get_local_backup_path(&self.path);
+        let backup_path = path::get_local_backup_path(self);
         if matches!(self.current_env, EnvType::Local) {
             fs::copy(&local_env, &backup_path)
                 .map_err(|_| EnvmError::FailedToBackupLocalEnvironment)?;
@@ -86,7 +81,7 @@ impl Repository {
                 copy(&backup_path, EnvmError::MissingBackupEnvironment)?;
             }
             EnvType::Other(_) => {
-                let target_env = self.get_environment_filename(env);
+                let target_env = path::get_env_path(self, env);
                 copy(
                     &target_env,
                     EnvmError::MissingTargetEnvironment(String::from(env)),
@@ -116,7 +111,7 @@ impl Repository {
         let template_path = self.path.join(self.config.template());
         let target_path = match EnvType::from(env) {
             EnvType::Local => self.get_local_environment_filename(),
-            EnvType::Other(_) => path::get_env_path(&self.path, self.config.pattern(), env),
+            EnvType::Other(_) => path::get_env_path(self, env),
         };
         if !template_path.exists() {
             return Err(EnvmError::MissingTemplateEnvironment(
@@ -133,7 +128,7 @@ impl Repository {
 
 fn lookup_repository(dir: PathBuf) -> Option<PathBuf> {
     dir.ancestors()
-        .take_while(|it| path::get_envm_path(it).exists())
+        .take_while(|it| path::is_envm_repository(it))
         .next()
         .map(|it| it.to_path_buf())
 }
@@ -156,9 +151,9 @@ mod tests {
         let dir = dir.into_path();
         let repo = Repository::new(dir.clone());
         repo.init()?;
-        assert!(path::get_envm_path(&dir).exists());
-        assert!(path::get_config_path(&dir).exists());
-        assert!(path::get_head_path(&dir).exists());
+        assert!(path::get_envm_path(&repo.path).exists());
+        assert!(path::get_config_path(&repo.path).exists());
+        assert!(path::get_head_path(&repo.path).exists());
         fs::remove_dir_all(&dir)?;
         Ok(())
     }
@@ -178,7 +173,7 @@ mod tests {
     }
 
     fn make_env_file(repo: &Repository, env: &str) -> Result<PathBuf, Box<dyn Error>> {
-        let path = path::get_env_path(&repo.path, repo.config.pattern(), env);
+        let path = path::get_env_path(&repo, env);
         let data = format!("ENV={}", env);
         fs::write(&path, data)?;
         Ok(path)
@@ -209,7 +204,7 @@ mod tests {
         make_env_file(&repo, "dev")?;
 
         repo.use_environment("dev")?;
-        let backup_path = path::get_local_backup_path(&repo.path);
+        let backup_path = path::get_local_backup_path(&repo);
         assert!(backup_path.exists());
         let contents = fs::read_to_string(backup_path)?;
         assert_eq!(contents, "ENV=local");
@@ -223,7 +218,7 @@ mod tests {
         let local_path = make_local_env_file(&repo)?;
         make_env_file(&repo, "dev")?;
         repo.use_environment("dev")?;
-        let backup_path = path::get_local_backup_path(&repo.path);
+        let backup_path = path::get_local_backup_path(&repo);
         fs::write(&backup_path, "ENV=backup")?;
 
         // Sync repository state with file system
@@ -249,7 +244,7 @@ mod tests {
 
         repo.new_environment("dev")?;
 
-        let dev_path = path::get_env_path(&repo.path, repo.config.pattern(), "dev");
+        let dev_path = path::get_env_path(&repo, "dev");
         assert!(dev_path.exists());
         fs::remove_dir_all(repo.path)?;
         Ok(())
