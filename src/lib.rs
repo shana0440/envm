@@ -28,6 +28,11 @@ pub fn run() -> Result<(), EnvmError> {
                     repo.new_environment(&env)?;
                     println!("create a new environment '{}'", env);
                 }
+                UseCase::ListEnvironments => {
+                    for env in repo.list_environments() {
+                        println!("{}", env);
+                    }
+                }
                 _ => (),
             }
         }

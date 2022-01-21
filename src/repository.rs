@@ -1,4 +1,6 @@
+use regex::Regex;
 use std::{
+    ffi::OsStr,
     fs,
     path::{Path, PathBuf},
 };
@@ -116,6 +118,33 @@ impl Repository {
         }
         fs::copy(template_path, target_path).unwrap();
         Ok(())
+    }
+
+    pub fn list_environments(&self) -> Vec<String> {
+        let paths = fs::read_dir(&self.path).unwrap();
+        let pattern = self.config.pattern();
+        let payload = format!(
+            "^{}$",
+            pattern.replace(".", r"\.").replace("{}", "(?P<env>.*?)")
+        );
+        let re = Regex::new(&payload).unwrap();
+        let template = OsStr::new(self.config.template());
+
+        paths
+            .map(|it| it.as_ref().unwrap().path())
+            .filter(|it| {
+                let metadata = fs::metadata(it).unwrap();
+                metadata.is_file()
+            })
+            // NOTE: the file_name return a reference, since we cannot pass down the reference, so
+            // we need to unwrap the filename twice.
+            .filter(|it| it.file_name().unwrap() != template)
+            .map(|it| {
+                let filename = it.file_name().unwrap().to_str().unwrap();
+                re.captures(filename).map(|caps| String::from(&caps["env"]))
+            })
+            .filter_map(|it| it)
+            .collect()
     }
 }
 
@@ -251,6 +280,18 @@ mod tests {
 
         let local_path = path::get_local_env_path(&repo);
         assert!(local_path.exists());
+        fs::remove_dir_all(repo.path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn should_list_env() -> Result<(), Box<dyn Error>> {
+        let repo = create_envm_repo_use_local_env()?;
+        make_template_env_file(&repo)?;
+        make_env_file(&repo, "dev")?;
+        make_env_file(&repo, "production")?;
+
+        assert_eq!(repo.list_environments(), vec!["dev", "production"]);
         fs::remove_dir_all(repo.path)?;
         Ok(())
     }
