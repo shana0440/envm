@@ -4,6 +4,7 @@ pub enum UseCase {
     UseEnvironment(String),
     NewEnvironment(String),
     ListEnvironments,
+    RemoveEnvironment(String),
     InitConfiguration,
 }
 
@@ -29,7 +30,12 @@ impl<'a> Command<'a> {
                     .about("Create new environment base on template")
                     .arg(arg!(<ENV> "The environment to target")),
             )
-            .subcommand(App::new("ls").about("List all available environments except local"));
+            .subcommand(App::new("ls").about("List all available environments except local"))
+            .subcommand(
+                App::new("rm")
+                    .about("Remove given environment")
+                    .arg(arg!(<ENV> "The environment to target")),
+            );
 
         Command { app }
     }
@@ -50,6 +56,10 @@ impl<'a> Command<'a> {
             }
             Some(("ls", _)) => {
                 return UseCase::ListEnvironments;
+            }
+            Some(("rm", sub_matches)) => {
+                let env = sub_matches.value_of("ENV").expect("required");
+                return UseCase::RemoveEnvironment(String::from(env));
             }
             _ => unreachable!(),
         };

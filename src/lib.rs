@@ -33,6 +33,10 @@ pub fn run() -> Result<(), EnvmError> {
                         println!("{}", env);
                     }
                 }
+                UseCase::RemoveEnvironment(env) => {
+                    repo.remove_environment(&env)?;
+                    println!("removed environment '{}'", env);
+                }
                 _ => (),
             }
         }

@@ -23,6 +23,19 @@ impl EnvType {
             EnvType::Other(value) => &value,
         }
     }
+
+    pub fn is_equal(&self, target: &EnvType) -> bool {
+        match target {
+            EnvType::Local => match &self {
+                EnvType::Local => true,
+                EnvType::Other(_) => false,
+            },
+            EnvType::Other(target_str) => match &self {
+                EnvType::Local => false,
+                EnvType::Other(self_str) => target_str == self_str,
+            },
+        }
+    }
 }
 
 #[cfg(test)]
@@ -39,5 +52,18 @@ mod tests {
     fn get_other_head() {
         let env = EnvType::from("dev");
         assert!(matches!(env, EnvType::Other(v) if v == "dev"));
+    }
+
+    #[test]
+    fn should_equal() {
+        assert!(EnvType::from("local").is_equal(&EnvType::from("local")));
+        assert!(EnvType::from("dev").is_equal(&EnvType::from("dev")));
+    }
+
+    #[test]
+    fn should_not_equal() {
+        assert!(!EnvType::from("local").is_equal(&EnvType::from("dev")));
+        assert!(!EnvType::from("dev").is_equal(&EnvType::from("local")));
+        assert!(!EnvType::from("dev").is_equal(&EnvType::from("production")));
     }
 }

@@ -13,6 +13,7 @@ pub enum EnvmError {
     MissingTemplateEnvironment(String),
     TargetEnvironmentAlreadyExists(String),
     AlreadyUsingTargetEnvironment(String),
+    RemovingUsingEnvironment(String),
 }
 
 impl fmt::Display for EnvmError {
@@ -43,6 +44,9 @@ impl fmt::Display for EnvmError {
             }
             EnvmError::AlreadyUsingTargetEnvironment(env) => {
                 write!(f, "already using '{}' environment", env)
+            }
+            EnvmError::RemovingUsingEnvironment(env) => {
+                write!(f, "cannot remove current using environment: {}", env)
             }
         }
     }

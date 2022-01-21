@@ -146,6 +146,22 @@ impl Repository {
             .filter_map(|it| it)
             .collect()
     }
+
+    pub fn remove_environment(&self, env: &str) -> Result<(), EnvmError> {
+        let env_type = EnvType::from(env);
+        if self.current_env.is_equal(&env_type) {
+            return Err(EnvmError::RemovingUsingEnvironment(String::from(env)));
+        }
+        let env_path = match env_type {
+            EnvType::Local => path::get_local_env_path(self),
+            EnvType::Other(env) => path::get_env_path(self, &env),
+        };
+        if !env_path.exists() {
+            return Err(EnvmError::MissingTargetEnvironment(String::from(env)));
+        }
+        fs::remove_file(env_path).unwrap();
+        Ok(())
+    }
 }
 
 fn lookup_repository(dir: PathBuf) -> Option<PathBuf> {
@@ -292,6 +308,35 @@ mod tests {
         make_env_file(&repo, "production")?;
 
         assert_eq!(repo.list_environments(), vec!["dev", "production"]);
+        fs::remove_dir_all(repo.path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn should_remove_env() -> Result<(), Box<dyn Error>> {
+        let repo = create_envm_repo_use_local_env()?;
+        make_template_env_file(&repo)?;
+        make_env_file(&repo, "dev")?;
+
+        repo.remove_environment("dev")?;
+        let dev_path = path::get_env_path(&repo, "dev");
+        assert!(!dev_path.exists());
+
+        fs::remove_dir_all(repo.path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn should_not_remove_current_env() -> Result<(), Box<dyn Error>> {
+        let repo = create_envm_repo_use_local_env()?;
+        make_template_env_file(&repo)?;
+
+        match repo.remove_environment("local") {
+            Ok(_) => panic!("Should not remove the using environment"),
+            Err(e) => {
+                assert!(matches!(e, EnvmError::RemovingUsingEnvironment(env) if env == "local"))
+            }
+        };
         fs::remove_dir_all(repo.path)?;
         Ok(())
     }
