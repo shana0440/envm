@@ -37,6 +37,12 @@ pub fn run() -> Result<(), EnvmError> {
                     repo.remove_environment(&env)?;
                     println!("removed environment '{}'", env);
                 }
+                UseCase::ShowCurrentUsingEnvironment => {
+                    println!(
+                        "currently using '{}' environment",
+                        repo.current_env().to_string()
+                    );
+                }
                 _ => (),
             }
         }

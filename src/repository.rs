@@ -162,6 +162,10 @@ impl Repository {
         fs::remove_file(env_path).unwrap();
         Ok(())
     }
+
+    pub fn current_env(&self) -> &EnvType {
+        &self.current_env
+    }
 }
 
 fn lookup_repository(dir: PathBuf) -> Option<PathBuf> {
@@ -329,7 +333,6 @@ mod tests {
     #[test]
     fn should_not_remove_current_env() -> Result<(), Box<dyn Error>> {
         let repo = create_envm_repo_use_local_env()?;
-        make_template_env_file(&repo)?;
 
         match repo.remove_environment("local") {
             Ok(_) => panic!("Should not remove the using environment"),

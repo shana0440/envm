@@ -5,6 +5,7 @@ pub enum UseCase {
     NewEnvironment(String),
     ListEnvironments,
     RemoveEnvironment(String),
+    ShowCurrentUsingEnvironment,
     InitConfiguration,
 }
 
@@ -35,7 +36,8 @@ impl<'a> Command<'a> {
                 App::new("rm")
                     .about("Remove given environment")
                     .arg(arg!(<ENV> "The environment to target")),
-            );
+            )
+            .subcommand(App::new("now").about("Show current using environment"));
 
         Command { app }
     }
@@ -60,6 +62,9 @@ impl<'a> Command<'a> {
             Some(("rm", sub_matches)) => {
                 let env = sub_matches.value_of("ENV").expect("required");
                 return UseCase::RemoveEnvironment(String::from(env));
+            }
+            Some(("now", _)) => {
+                return UseCase::ShowCurrentUsingEnvironment;
             }
             _ => unreachable!(),
         };
