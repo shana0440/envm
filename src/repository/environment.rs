@@ -25,15 +25,10 @@ impl EnvType {
     }
 
     pub fn is_equal(&self, target: &EnvType) -> bool {
-        match target {
-            EnvType::Local => match &self {
-                EnvType::Local => true,
-                EnvType::Other(_) => false,
-            },
-            EnvType::Other(target_str) => match &self {
-                EnvType::Local => false,
-                EnvType::Other(self_str) => target_str == self_str,
-            },
+        match (self, target) {
+            (EnvType::Local, EnvType::Local) => true,
+            (EnvType::Other(self_env), EnvType::Other(target_env)) => self_env == target_env,
+            _ => false,
         }
     }
 }
