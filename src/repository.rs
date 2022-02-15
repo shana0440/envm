@@ -34,8 +34,7 @@ impl Repository {
             None => return Err(EnvmError::NotEnvmRepository),
         };
         let config_path = path::get_config_path(&path);
-        let contents = fs::read_to_string(config_path).map_err(|_| EnvmError::MissingConfigFile)?;
-        let config = Config::from(&contents)?;
+        let config = Config::load(&config_path.to_str().unwrap())?;
         let head_path = path::get_head_path(&path);
         let contents = fs::read_to_string(head_path).map_err(|_| EnvmError::MissngHeadFile)?;
         let current_env = EnvType::from(&contents);
@@ -93,7 +92,8 @@ impl Repository {
             return Err(EnvmError::RepositoryAlreadyExists);
         }
         fs::create_dir(path::get_envm_path(&self.path)).unwrap();
-        fs::write(path::get_config_path(&self.path), self.config.to_string()).unwrap();
+        self.config
+            .store(path::get_config_path(&self.path).to_str().unwrap());
         fs::write(
             path::get_head_path(&self.path),
             self.current_env.to_string(),

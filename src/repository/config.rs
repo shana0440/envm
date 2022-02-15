@@ -1,9 +1,9 @@
+use confy;
 use serde::{Deserialize, Serialize};
-use toml;
 
 use crate::error::EnvmError;
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 pub struct Config {
     local: String,
     pattern: String,
@@ -19,9 +19,8 @@ impl Config {
         }
     }
 
-    pub fn from(contents: &str) -> Result<Config, EnvmError> {
-        let config: Config =
-            toml::from_str(contents).map_err(|_| EnvmError::FailedToParseConfig)?;
+    pub fn load(path: &str) -> Result<Config, EnvmError> {
+        let config: Config = confy::load_path(path).map_err(|_| EnvmError::FailedToParseConfig)?;
         Ok(config)
     }
 
@@ -37,24 +36,27 @@ impl Config {
         &self.template
     }
 
-    pub fn to_string(&self) -> String {
-        toml::to_string(self).unwrap()
+    pub fn store(&self, path: &str) {
+        confy::store_path(path, self).unwrap();
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::prelude::*;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn prase_config() -> Result<(), EnvmError> {
-        let config = Config::from(
-            r#"
+        let mut file = NamedTempFile::new().unwrap();
+        let content = r#"
             local = ".env"
             pattern = ".env.{}"
             template = ".env.example"
-        "#,
-        )?;
+        "#;
+        file.write_all(content.as_bytes()).unwrap();
+        let config = Config::load(&file.path().to_str().unwrap())?;
         assert_eq!(config.local, ".env");
         assert_eq!(config.pattern, ".env.{}");
         assert_eq!(config.template, ".env.example");
