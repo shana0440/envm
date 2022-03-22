@@ -1,6 +1,7 @@
 use clap::{arg, crate_authors, crate_description, crate_version, App, AppSettings};
 
 pub enum UseCase {
+    DiffEnvironment(String),
     UseEnvironment(String),
     NewEnvironment(String),
     ListEnvironments,
@@ -20,6 +21,11 @@ impl<'a> Command<'a> {
             .author(crate_authors!())
             .about(crate_description!())
             .setting(AppSettings::SubcommandRequiredElseHelp)
+            .subcommand(
+                App::new("diff")
+                    .about("List different between target environment file and template environment file")
+                    .arg(arg!(<ENV> "The environment to target"))
+            )
             .subcommand(
                 App::new("use")
                     .about("Use environment")
@@ -45,6 +51,10 @@ impl<'a> Command<'a> {
     pub fn run(self) -> UseCase {
         let matches = self.app.get_matches();
         match matches.subcommand() {
+            Some(("diff", sub_matches)) => {
+                let env = sub_matches.value_of("ENV").expect("required");
+                return UseCase::DiffEnvironment(String::from(env));
+            }
             Some(("use", sub_matches)) => {
                 let env = sub_matches.value_of("ENV").expect("required");
                 return UseCase::UseEnvironment(String::from(env));

@@ -5,6 +5,7 @@ mod repository;
 use crate::command::{Command, UseCase};
 use crate::error::EnvmError;
 use crate::repository::Repository;
+use colored::Colorize;
 use std::env;
 
 pub fn run() -> Result<(), EnvmError> {
@@ -20,6 +21,23 @@ pub fn run() -> Result<(), EnvmError> {
         other => {
             let repo = Repository::load(current_dir)?;
             match other {
+                UseCase::DiffEnvironment(target) => {
+                    let (missing, extra) = repo.compare_to_template(&target);
+                    if let Some(missing) = missing {
+                        println!("missing variables:");
+                        missing
+                            .iter()
+                            .map(|it| format!("- {}", it).red())
+                            .for_each(|it| println!("{}", it));
+                    }
+                    if let Some(extra) = extra {
+                        println!("extra variables:");
+                        extra
+                            .iter()
+                            .map(|it| format!("+ {}", it).green())
+                            .for_each(|it| println!("{}", it));
+                    }
+                }
                 UseCase::UseEnvironment(target) => {
                     repo.use_environment(&target)?;
                     println!("switch to {} environment", target);

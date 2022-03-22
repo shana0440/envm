@@ -163,6 +163,12 @@ impl Repository {
         Ok(())
     }
 
+    pub fn compare_to_template(&self, env: &String) -> (Option<Vec<String>>, Option<Vec<String>>) {
+        let missing = vec![String::from("APP_URL")];
+        let extra = vec![String::from("DB_USER")];
+        (Some(missing), Some(extra))
+    }
+
     pub fn current_env(&self) -> &EnvType {
         &self.current_env
     }
