@@ -9,6 +9,7 @@ pub mod config;
 pub mod environment;
 pub mod path;
 
+use crate::configuration;
 use crate::error::EnvmError;
 use crate::repository::config::Config;
 use crate::repository::environment::EnvType;
@@ -164,9 +165,18 @@ impl Repository {
     }
 
     pub fn compare_to_template(&self, env: &String) -> (Option<Vec<String>>, Option<Vec<String>>) {
-        let missing = vec![String::from("APP_URL")];
-        let extra = vec![String::from("DB_USER")];
-        (Some(missing), Some(extra))
+        // detect configuration format
+        //   support format
+        //     - json
+        //     - toml
+        //     - yaml
+        //     - dotenv
+        // read template as hash map
+        // read target configuration as hash map
+        // compare two hash map
+        let template_configuration = configuration::parse(&path::get_template_env_path(self));
+        let target_configuration = configuration::parse(&path::get_env_path(self, env));
+        configuration::compare(&template_configuration, &target_configuration)
     }
 
     pub fn current_env(&self) -> &EnvType {

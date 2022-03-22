@@ -1,4 +1,5 @@
 mod command;
+mod configuration;
 mod error;
 mod repository;
 
