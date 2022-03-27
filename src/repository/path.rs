@@ -5,8 +5,8 @@ pub fn get_config_path<P: AsRef<Path>>(path: P) -> PathBuf {
     get_envm_path(path).join("config")
 }
 
-pub fn get_head_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    get_envm_path(path).join("HEAD")
+pub fn get_current_path<P: AsRef<Path>>(path: P) -> PathBuf {
+    get_envm_path(path).join("CURRENT")
 }
 
 // Ensure the env is a single text instead of path, so user can't access other file than
@@ -57,9 +57,9 @@ mod tests {
     }
 
     #[test]
-    fn should_get_head_path() {
+    fn should_get_current_path() {
         let repo = Repository::new(Path::new("/repo").to_path_buf());
-        assert_eq!(get_head_path(&repo.path), Path::new("/repo/.envm/HEAD"));
+        assert_eq!(get_current_path(&repo.path), Path::new("/repo/.envm/CURRENT"));
     }
 
     #[test]

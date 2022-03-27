@@ -10,7 +10,7 @@ Run the following command to generate envm repository at current directory.
 envm init
 ```
 
-The command will generate a .envm directory at current directory, and contains `config` and `HEAD` file.
+The command will generate a `.envm` directory at current directory, and contains `config` and `CURRENT` file.
 
 ### Config
 

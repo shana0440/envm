@@ -36,7 +36,7 @@ impl Repository {
         };
         let config_path = path::get_config_path(&path);
         let config = Config::load(&config_path.to_str().unwrap())?;
-        let head_path = path::get_head_path(&path);
+        let head_path = path::get_current_path(&path);
         let contents = fs::read_to_string(head_path).map_err(|_| EnvmError::MissngHeadFile)?;
         let current_env = EnvType::from(&contents);
         Ok(Repository {
@@ -48,7 +48,7 @@ impl Repository {
 
     fn set_head(&self, env: &str) {
         let env = EnvType::from(env);
-        let head_path = path::get_head_path(&self.path);
+        let head_path = path::get_current_path(&self.path);
         fs::write(head_path, env.to_string()).unwrap();
     }
 
@@ -96,7 +96,7 @@ impl Repository {
         self.config
             .store(path::get_config_path(&self.path).to_str().unwrap());
         fs::write(
-            path::get_head_path(&self.path),
+            path::get_current_path(&self.path),
             self.current_env.to_string(),
         )
         .unwrap();
@@ -211,7 +211,7 @@ mod tests {
         repo.init()?;
         assert!(path::get_envm_path(&repo.path).exists());
         assert!(path::get_config_path(&repo.path).exists());
-        assert!(path::get_head_path(&repo.path).exists());
+        assert!(path::get_current_path(&repo.path).exists());
         fs::remove_dir_all(&dir)?;
         Ok(())
     }
@@ -245,7 +245,7 @@ mod tests {
 
         repo.use_environment("dev")?;
 
-        let head_path = path::get_head_path(&repo.path);
+        let head_path = path::get_current_path(&repo.path);
         let head = fs::read_to_string(head_path)?;
         assert_eq!(head, EnvType::Other(String::from("dev")).to_string());
 
