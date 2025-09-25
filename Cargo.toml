@@ -7,7 +7,7 @@ description = "A tool help to manage the environment"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { verson = "1.0.133", features = ["derive"] }
+serde = { version = "1.0.133", features = ["derive"] }
 clap = { version = "3.0.6", features = ["derive", "cargo"] }
 regex = "1.5"
 confy = "0.4.0"
