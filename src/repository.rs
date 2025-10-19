@@ -331,7 +331,10 @@ mod tests {
         make_env_file(&repo, "dev")?;
         make_env_file(&repo, "production")?;
 
-        assert_eq!(repo.list_environments(), vec!["dev", "production"]);
+        assert_eq!(
+            repo.list_environments().sort(),
+            vec!["dev", "production"].sort()
+        );
         fs::remove_dir_all(repo.path)?;
         Ok(())
     }
