@@ -1,10 +1,12 @@
 mod command;
 mod configuration;
 mod error;
+mod gitignore;
 mod repository;
 
 use crate::command::{Command, UseCase};
 use crate::error::EnvmError;
+use crate::gitignore::Gitignore;
 use crate::repository::Repository;
 use colored::Colorize;
 use std::env;
@@ -15,12 +17,12 @@ pub fn run() -> Result<(), EnvmError> {
     let use_case = command.run();
     match use_case {
         UseCase::InitConfiguration => {
-            let repo = Repository::new(current_dir);
+            let repo = Repository::new(current_dir.clone());
             let repo_path = repo.init()?;
             println!("initialized envm repository in {}", repo_path.display());
         }
         other => {
-            let repo = Repository::load(current_dir)?;
+            let repo = Repository::load(current_dir.clone())?;
             match other {
                 UseCase::DiffEnvironment(target) => {
                     let (missing, extra) = repo.compare_to_template(&target);
@@ -61,6 +63,23 @@ pub fn run() -> Result<(), EnvmError> {
                         "currently using '{}' environment",
                         repo.current_env().to_string()
                     );
+                }
+                UseCase::Gitignore => {
+                    let gitignore_path = current_dir.join(".gitignore");
+                    let mut gitignore = Gitignore::load(gitignore_path)?;
+                    let config = repo.config();
+                    let gitignore_pattern = config.pattern().replace("{}", "*");
+                    let env_template = format!("!{}", config.template());
+
+                    let patterns = vec![
+                        ".envm".to_string(),
+                        config.local().clone(),
+                        gitignore_pattern,
+                        env_template,
+                    ];
+                    gitignore.ignore_patterns_section("envm", patterns);
+                    gitignore.save()?;
+                    println!("updated .gitignore with .envm and patterns from configuration");
                 }
                 _ => (),
             }

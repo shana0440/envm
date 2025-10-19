@@ -46,6 +46,10 @@ impl Repository {
         })
     }
 
+    pub fn config(&self) -> &Config {
+        &self.config
+    }
+
     fn set_head(&self, env: &str) {
         let env = EnvType::from(env);
         let head_path = path::get_current_path(&self.path);

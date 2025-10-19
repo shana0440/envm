@@ -8,6 +8,7 @@ pub enum UseCase {
     RemoveEnvironment(String),
     ShowCurrentUsingEnvironment,
     InitConfiguration,
+    Gitignore,
 }
 
 pub struct Command<'a> {
@@ -43,7 +44,8 @@ impl<'a> Command<'a> {
                     .about("Remove given environment")
                     .arg(arg!(<ENV> "The environment to target")),
             )
-            .subcommand(App::new("now").about("Show current using environment"));
+            .subcommand(App::new("now").about("Show current using environment"))
+            .subcommand(App::new("gitignore").about("Ignore .envm on git"));
 
         Command { app }
     }
@@ -75,6 +77,9 @@ impl<'a> Command<'a> {
             }
             Some(("now", _)) => {
                 return UseCase::ShowCurrentUsingEnvironment;
+            }
+            Some(("gitignore", _)) => {
+                return UseCase::Gitignore;
             }
             _ => unreachable!(),
         };

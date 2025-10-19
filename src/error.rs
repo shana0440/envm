@@ -14,6 +14,8 @@ pub enum EnvmError {
     TargetEnvironmentAlreadyExists(String),
     AlreadyUsingTargetEnvironment(String),
     RemovingUsingEnvironment(String),
+    UnableReadGitignore(std::io::Error),
+    UnableWriteGitignore(std::io::Error),
 }
 
 impl fmt::Display for EnvmError {
@@ -47,6 +49,12 @@ impl fmt::Display for EnvmError {
             }
             EnvmError::RemovingUsingEnvironment(env) => {
                 write!(f, "cannot remove current using environment: {}", env)
+            }
+            EnvmError::UnableReadGitignore(err) => {
+                write!(f, "unable to read the .gitignore file: {}", err)
+            }
+            EnvmError::UnableWriteGitignore(err) => {
+                write!(f, "unable to write to the .gitignore file: {}", err)
             }
         }
     }
